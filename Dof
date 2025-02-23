@@ -1,0 +1,167 @@
+--[[
+    DOF ON TOP UI Script (Simplified Version - No Minimize)
+    - Features:
+      * AUTO EAT EGG EVERY 30 MINS: Uses Protein Egg every 29:30 minutes
+      * EAT ALL SNACK: Auto-use all snack items
+    - UI is movable and styled with toggle switches
+    - Made by: Dylan
+--]]
+
+-- SERVICES
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- SNACK & EGG SETTINGS
+local snacks = {
+    "TOUGH Bar",
+    "Protein Shake",
+    "Protein Bar",
+    "ULTRA Shake",
+    "Energy Shake",
+    "Energy Bar",
+    "Tropical Shake"
+}
+local proteinEggName = "Protein Egg"
+local delayTime = 29 * 60 + 30  -- 29 minutes and 30 seconds
+
+-- TOGGLES TABLE
+local toggles = {
+    ["AUTO EAT EGG EVERY 30 MINS"] = false,
+    ["EAT ALL SNACK"] = false
+}
+
+--// CREATE UI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DOF_ON_TOP"
+ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.ResetOnSpawn = false
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 300, 0, 200)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.BorderSizePixel = 0
+MainFrame.Draggable = true
+MainFrame.Active = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = MainFrame
+
+-- Title Bar
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundTransparency = 1
+Title.Text = "DOF ON TOP | by Dylan"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.Parent = MainFrame
+
+-- Close Button
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -35, 0, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextScaled = true
+CloseButton.Font = Enum.Font.SourceSansBold
+CloseButton.Parent = MainFrame
+
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+-- Toggle Switch Creator Function
+local function createToggleSwitch(name, yPos, callback)
+    local ToggleFrame = Instance.new("Frame")
+    ToggleFrame.Size = UDim2.new(1, -20, 0, 40)
+    ToggleFrame.Position = UDim2.new(0, 10, 0, yPos)
+    ToggleFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    ToggleFrame.BorderSizePixel = 0
+    ToggleFrame.Parent = MainFrame
+    
+    local ToggleText = Instance.new("TextLabel")
+    ToggleText.Size = UDim2.new(0.8, 0, 1, 0)
+    ToggleText.Position = UDim2.new(0, 10, 0, 0)
+    ToggleText.BackgroundTransparency = 1
+    ToggleText.Text = name
+    ToggleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleText.TextScaled = true
+    ToggleText.Font = Enum.Font.SourceSansBold
+    ToggleText.TextXAlignment = Enum.TextXAlignment.Left
+    ToggleText.Parent = ToggleFrame
+
+    local Switch = Instance.new("TextButton")
+    Switch.Size = UDim2.new(0, 50, 0, 20)
+    Switch.Position = UDim2.new(0.85, 0, 0.25, 0)
+    Switch.BackgroundColor3 = Color3.fromRGB(255, 0, 0) 
+    Switch.Text = ""
+    Switch.BorderSizePixel = 0
+    Switch.Parent = ToggleFrame
+
+    Switch.MouseButton1Click:Connect(function()
+        toggles[name] = not toggles[name]
+        if toggles[name] then
+            Switch.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        else
+            Switch.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        end
+        callback(toggles[name])
+    end)
+end
+
+-- Auto Eat Egg Function
+local autoEggEnabled = false
+local function autoEatEgg(enabled)
+    task.spawn(function()
+        while autoEggEnabled do
+            local tool = player.Backpack:FindFirstChild(proteinEggName)
+            if tool then
+                tool.Parent = player.Character
+                task.wait(0.1)
+                tool:Activate()
+                task.wait(delayTime)
+            else
+                task.wait(1)
+            end
+        end
+    end)
+end
+
+-- Eat All Snack Function
+local eatSnackEnabled = false
+local function eatAllSnack(enabled)
+    task.spawn(function()
+        while eatSnackEnabled do
+            for _, snackName in ipairs(snacks) do
+                local tool = player.Backpack:FindFirstChild(snackName)
+                if tool then
+                    tool.Parent = player.Character
+                    task.wait(0.1)
+                    tool:Activate()
+                end
+            end
+            task.wait(math.random(1, 2))
+        end
+    end)
+end
+
+--// CREATE TOGGLES ON UI
+createToggleSwitch("AUTO EAT EGG EVERY 30 MINS", 50, function(state)
+    autoEggEnabled = state
+    if autoEggEnabled then
+        autoEatEgg(true)
+    end
+end)
+
+createToggleSwitch("EAT ALL SNACK", 100, function(state)
+    eatSnackEnabled = state
+    if eatSnackEnabled then
+        eatAllSnack(true)
+    end
+end)
+
+print("DOF ON TOP UI Loaded!")
